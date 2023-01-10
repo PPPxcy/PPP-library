@@ -21,7 +21,4 @@ namespace PPP {
 			}
 	};
 }
-#define getfor(a) get_for<a>()
-#define changetype(a) change_type<a>()
-#define recycle(a) re_cycle<a>()
 #endif
