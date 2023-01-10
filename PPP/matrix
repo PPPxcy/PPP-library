@@ -1,0 +1,74 @@
+#ifndef __PPP_MATRIX__
+#define __PPP_MATRIX__ 't'
+#if __PPP_MATRIX__ != 'l'
+namespace PPP {
+	#define loop(i, x) for(int i = 0; i < x; i++)
+	template<const unsigned h, const unsigned w, typename _Val = int> class matrix {
+		public:
+			_Val c[h][w];
+			matrix<h, w, _Val> operator + (matrix<h, w, _Val> a) {
+				matrix<h, w, _Val> res;
+				loop(i, h)	loop(j, w)
+					res(i, j) = c[i][j] + a(i, j);
+				return res;
+			}
+			matrix<h, w, _Val>& operator += (matrix<h, w, _Val> a) {
+				loop(i, h)	loop(j, w)
+					c[i][j] += a(i, j);
+				return (*this);
+			}
+			template<const unsigned p, const unsigned q> matrix<h + p, w + q, _Val> operator ^ (matrix<p, q, _Val> a) {
+				matrix<h + p, w + q, _Val> res;
+				loop(i, h)	loop(j, w)
+					res(i, j) = c[i][j];
+				loop(i, p)	loop(j, q)
+					res(h + i, w + j) = a(i, j);
+				return res;
+			}
+			matrix<h, w, _Val> operator - (matrix<h, w, _Val> a) {
+				matrix<h, w, _Val> res;
+				loop(i, h)	loop(j, w)
+					res(i, j) = c[i][j] - a(i, j);
+				return res;
+			}
+			matrix<h, w, _Val>& operator -= (matrix<h, w, _Val> a) {
+				loop(i, h)	loop(j, w)
+					c[i][j] -= a(i, j);
+				return (*this);
+			}
+			template<const unsigned p> matrix<h, p, _Val> operator * (matrix<w, p, _Val> a) {
+				matrix<h, p, _Val> res;
+				loop(i, h)	loop(j, p)	loop(k, w)
+					res(i, j) += c[i][k] * a(k, j);
+				return res;
+			}
+			matrix<h, w, _Val>& operator *= (matrix<w, w, _Val> a) {
+				matrix<h, w, _Val> res;
+				loop(i, h)	loop(j, w)	loop(k, w)
+					res(i, j) += c[i][k] * a(k, j);
+				return (*this) = res;
+			}
+			_Val& operator () (int i, int j) {
+				return c[i][j];
+			}
+			matrix<h, w, _Val>() {
+				loop(i, h)	loop(j, w)
+					c[i][j] = _Val();
+			}
+			matrix<h, w, _Val>(_Val a[h][w]) {
+				loop(i, h)	loop(j, w)
+					c[i][j] = a[i][j];
+			}
+			matrix<h, w, _Val>(matrix<h, w, _Val> &a) {
+				loop(i, h)	loop(j, w)
+					c[i][j] = a(i, j);
+			}
+			template<typename _Tp> matrix<h, w, _Val>(_Tp a) {
+				loop(i, h)	loop(j, w)
+					c[i][j] = a[i][j];
+			}
+	};
+	#undef loop
+}
+#endif
+#endif

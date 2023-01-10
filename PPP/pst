@@ -1,0 +1,98 @@
+#ifndef __PPP_PST__
+#define __PPP_PST__ 'u'
+namespace PPP {
+	template<typename _Tp, const unsigned _membsiz, const unsigned _rootsiz, const unsigned _nodesiz, typename num_t = int> class persistent_array {
+		private:
+			typedef _Tp leaf_t;
+			num_t root[_rootsiz], lfk, ndk;
+			leaf_t leaf[_rootsiz + _membsiz];
+			struct node_t {
+				num_t l, r;
+			} node[_nodesiz];
+			int newleaf() {
+				return --lfk;
+			}
+			int newnode() {
+				return ++ndk;
+			}
+			void build(num_t p, num_t l, num_t r, _Tp val[]) {
+				if(l == r) {
+					leaf[-p] = val[l];
+					return;
+				}
+				num_t mid = l + r >> 1;
+				if(l == mid)
+					node[p].l = newleaf();
+				else
+					node[p].l = newnode();
+				if(mid + 1 == r)
+					node[p].r = newleaf();
+				else
+					node[p].r = newnode();
+				build(node[p].l, l, mid, val), 
+				build(node[p].r, mid + 1, r, val);
+			}
+			void modify(num_t p, num_t n, num_t l, num_t r, num_t k, _Tp v) {
+				if(l == r) {
+					leaf[-n] = v;
+					return;
+				}
+				num_t mid = l + r >> 1;
+				if(k <= mid) {
+					if(l == mid)
+						node[n].l = newleaf();
+					else
+						node[n].l = newnode();
+					node[n].r = node[p].r;
+					modify(node[p].l, node[n].l, l, mid, k, v);
+				} else {
+					if(mid + 1 == r)
+						node[n].r = newleaf();
+					else
+						node[n].r = newnode();
+					node[n].l = node[p].l;
+					modify(node[p].r, node[n].r, mid + 1, r, k, v);
+				}
+			}
+			_Tp& query(num_t p, num_t l, num_t r, num_t k) {
+				if(l == r)
+					return leaf[-p];
+				num_t mid = l + r >> 1;
+				if(k <= mid)
+					return query(node[p].l, l, mid, k);
+				else
+					return query(node[p].r, mid + 1, r, k);
+			}
+		public:
+			void changerootnum(num_t p, num_t n) {
+				root[p] = root[n];
+			}
+			void build(num_t p) {
+				_Tp r[_membsiz] = {};
+				root[p] = newnode(),
+				build(root[p], 0, _membsiz - 1, r);
+			}
+			void build(num_t p, _Tp a[]) {
+				root[p] = newnode(),
+				build(root[p], 0, _membsiz - 1, a);
+			}
+			void modify(num_t p, num_t n, num_t k, _Tp v) {
+				root[n] = newnode(),
+				modify(root[p], root[n], 0, _membsiz - 1, k, v);
+			}
+			_Tp& query(num_t p, num_t k) {
+				return query(root[p], 0, _membsiz - 1, k);
+			}
+			_Tp& operator () (num_t p, num_t k) {
+				return query(p, k);
+			}
+			persistent_array<_Tp, _membsiz, _rootsiz, _nodesiz, num_t>() {
+				lfk = 0, ndk = 0, root[0] = newnode();
+			}
+			persistent_array<_Tp, _membsiz, _rootsiz, _nodesiz, num_t>(_Tp a[]) {
+				lfk = 0, ndk = 0, root[0] = newnode(), 
+				build(root[0], 0, _membsiz - 1, a);
+			}
+	};
+}
+#endif

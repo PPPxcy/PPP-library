@@ -1,0 +1,48 @@
+#ifndef __PPP_GRAPHIC_FUNCTION__
+#define __PPP_GRAPHIC_FUNCTION__ 'u'
+#include <PPP/graphic>
+#include <queue>
+#include <bitset>
+namespace PPP {
+	template<const unsigned _siz, typename _int_type>
+	std::vector<_int_type>& dijstra(graph_ev<_siz, _int_type> g, long long start, _int_type MAX = 998244353) {
+		std::vector<_int_type> f(_siz, MAX);
+		std::bitset<_siz> u;
+		std::priority_queue<std::pair<_int_type, _int_type>, std::vector< std::pair<_int_type, _int_type> >, std::greater< std::pair<_int_type, _int_type> > > q;
+		q.emplace(0, start), f[start] = 0;
+		while(!q.empty()) {
+			int x;
+			x = q.top().second, q.pop();
+			if(u[x])
+				continue;
+			u[x] = true;
+			for(auto y : g.get(x))
+				if(f[y.first] > f[x] + y.second)
+					f[y.first] = f[x] + y.second, q.emplace(f[y.first], y.first);
+		}
+		return f;
+	}
+	template<const unsigned _siz, typename _int_type>
+	bool dijstra(graph_env<_siz, _int_type, _int_type> g, long long start, _int_type MAX = 998244353) {
+		std::bitset<_siz> u;
+		std::vector<_int_type> f(_siz, 0);
+		std::priority_queue<std::pair<_int_type, _int_type>, std::vector< std::pair<_int_type, _int_type> >, std::greater< std::pair<_int_type, _int_type> > > q;
+		q.emplace(0, start), g[start] = 0;
+		while(!q.empty()) {
+			int x;
+			x = q.top().second;
+			if(u[x])
+				if(g[x] <= q.top().first)
+					continue;
+				else
+					return false;
+			q.pop();
+			u[x] = true, f[x] = g[x];
+			for(auto y : g.get(x))
+				if(g[y.first] > g[x] + y.second)
+					g[y.first] = g[x] + y.second, q.emplace(g[y.first], y.first);
+		}
+		return true;
+	}
+}
+#endif

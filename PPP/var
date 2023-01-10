@@ -1,0 +1,27 @@
+#ifndef __PPP_VAR__
+#define __PPP_VAR__ 'u'
+namespace PPP {
+	class var {
+		public:
+			void* P;
+			template<typename _Tp> _Tp& get_for() {
+				return (*(_Tp*)P);
+			}
+			template<typename _Tp> void change_type() {
+				if(P != nullptr)
+					delete(_Tp*)P;
+				P = new _Tp;
+			}
+			var() {
+				P = nullptr;
+			}
+			template<typename _Tp> void re_cycle() {
+				if(P != nullptr)
+					delete(_Tp*)P;
+			}
+	};
+}
+#define getfor(a) get_for<a>()
+#define changetype(a) change_type<a>()
+#define recycle(a) re_cycle<a>()
+#endif

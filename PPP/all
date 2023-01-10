@@ -1,0 +1,19 @@
+#ifndef __PPP_ALL__
+#define __PPP_ALL__ 'u'
+
+#include <PPP/DEBUG>
+#include <PPP/dich>
+#include <PPP/graphic>
+#include <PPP/graphic_function>
+#include <PPP/list>
+#include <PPP/maths>
+#include <PPP/pst>
+#include <PPP/random>
+#include <PPP/segtree>
+#include <PPP/segtree_val>
+#include <PPP/sort>
+#include <PPP/stack>
+#include <PPP/UF>
+#include <PPP/var>
+
+#endif

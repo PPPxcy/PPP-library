@@ -1,0 +1,122 @@
+#ifndef __PPP_RANDOM__
+#define __PPP_RANDOM__ 't'
+namespace PPP {
+	class mt19937_u {
+		private:
+			short index;
+			unsigned MT[624];
+			unsigned rand() {
+				if(index == 0)
+					for(unsigned i = 0; i < 624; i++) {
+						unsigned y = (MT[i] & 0X80000000U) + (MT[(i + 1) % 624] & 0X7FFFFFFFU);
+						MT[i] = MT[(i + 397) % 624] ^ (y >> 1);
+						if(y & 1)
+							MT[i] ^= 0X9908B0DFU;
+					}
+				unsigned y = MT[index];
+				y ^= y >> 11,
+				y ^= (y << 7) & 0X9D2C5680U,
+				y ^= (y << 15) & 0XEFC60000U,
+				y ^= y >> 18,
+				index = (index + 1) % 624;
+				return y;
+			}
+		public:
+			unsigned operator () () {
+				return rand();
+			}
+			void operator () (unsigned seed) {
+				MT[0] = seed;
+				for(unsigned i = 1; i < 624; i++)
+					MT[i] = 0X6C078965U * (MT[i - 1] ^ (MT[i - 1] >> 30)) + i & 0XFFFFFFFFU;
+			}
+			mt19937_u() : index(0) {
+				MT[0] = 1316124466U;
+				for(unsigned i = 1; i < 624; i++)
+					MT[i] = 0X6C078965U * (MT[i - 1] ^ (MT[i - 1] >> 30)) + i & 0XFFFFFFFFU;
+			}
+			mt19937_u(unsigned seed) : index(0) {
+				MT[0] = seed;
+				for(unsigned i = 1; i < 624; i++)
+					MT[i] = 0X6C078965U * (MT[i - 1] ^ (MT[i - 1] >> 30)) + i & 0XFFFFFFFFU;
+			}
+	};
+	class mt19937_s {
+		private:
+			short index;
+			signed MT[624];
+			signed rand() {
+				if(index == 0)
+					for(signed i = 0; i < 624; i++) {
+						signed y = (MT[i] & 0X80000000) + (MT[(i + 1) % 624] & 0X7FFFFFFF);
+						MT[i] = MT[(i + 397) % 624] ^ (y >> 1);
+						if(y & 1)
+							MT[i] ^= 0X9908B0DF;
+					}
+				signed y = MT[index];
+				y ^= y >> 11,
+				y ^= (y << 7) & 0X9D2C5680,
+				y ^= (y << 15) & 0XEFC60000,
+				y ^= y >> 18,
+				index = (index + 1) % 624;
+				return y;
+			}
+		public:
+			signed operator () () {
+				return rand();
+			}
+			void operator () (signed seed) {
+				MT[0] = seed;
+				for(signed i = 1; i < 624; i++)
+					MT[i] = 0X6C078965 * (MT[i - 1] ^ (MT[i - 1] >> 30)) + i & 0XFFFFFFFF;
+			}
+			mt19937_s() : index(0) {
+				MT[0] = 1316124466;
+				for(signed i = 1; i < 624; i++)
+					MT[i] = 0X6C078965 * (MT[i - 1] ^ (MT[i - 1] >> 30)) + i & 0XFFFFFFFF;
+			}
+			mt19937_s(signed seed) : index(0) {
+				MT[0] = seed;
+				for(signed i = 1; i < 624; i++)
+					MT[i] = 0X6C078965 * (MT[i - 1] ^ (MT[i - 1] >> 30)) + i & 0XFFFFFFFF;
+			}
+	};
+	namespace randgetting {
+		mt19937_u randu;
+		mt19937_s rands;
+		signed getrand(signed l, signed r, signed step = 1) {
+		//	Will be in [l, r)
+		//	r must be greater than l
+			return l + rands() % ((r - l - 1) / step + 1) * step;
+		}
+		unsigned getrand(unsigned l, unsigned r, unsigned step = 1) {
+			return l + randu() % ((r - l - 1) / step + 1) * step;
+		}
+		signed getrand_s(signed l, signed r, signed step = 1) {
+			return l + rands() % ((r - l - 1) / step + 1) * step;
+		}
+		unsigned getrand_u(unsigned l, unsigned r, unsigned step = 1) {
+			return l + randu() % ((r - l - 1) / step + 1) * step;
+		}
+		void setrand(signed l) {
+			rands(l);
+		}
+		void setrand(unsigned l) {
+			randu(l);
+		}
+		void setrand_s(signed l) {
+			rands(l);
+		}
+		void setrand_u(unsigned l) {
+			randu(l);
+		}
+	}
+	using randgetting::getrand;
+	using randgetting::getrand_s;
+	using randgetting::getrand_u;
+	using randgetting::setrand;
+	using randgetting::setrand_s;
+	using randgetting::setrand_u;
+}
+#endif
+

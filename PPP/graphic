@@ -1,0 +1,102 @@
+#ifndef __PPP_GRAPHIC__
+#define __PPP_GRAPHIC__ 'u'
+#include <vector>
+#include <bits/stl_pair.h>
+namespace PPP {
+	template<const unsigned _siz> class graph {
+		private:
+			std::vector<int> g[_siz];
+			bool directed;
+		public:
+			void clear(bool a) {
+				directed = a;
+				for(int i = 0; i < _siz; i++)
+					g[i].clear();
+			}
+			void connect(int i, int j) {
+				g[i].push_back(j);
+				if(directed == false)
+					g[j].push_back(i);
+			}
+			graph<_siz>(bool a) {
+				clear(a);
+			}
+			graph<_siz>() {
+				clear(false);
+			}
+			std::vector<int>& get(int i) {
+				return g[i];
+			}
+			graph<_siz> operator !() {
+				graph<_siz> F(true);
+				for(int i = 0; i < _siz; i++)
+					for(auto y : g[i])
+						F.get(y).push_back(i);
+				return F;
+			}
+	};
+	template<const unsigned _siz, typename _node_t> class graph_nv : public graph<_siz> {
+		private:
+			_node_t nv[_siz];
+		public:
+			_node_t& val(int i) {
+				return nv[i];
+			}
+			_node_t& operator [](int i) {
+				return val(i);
+			}
+			graph_nv<_siz, _node_t>(bool a = false, _node_t b = _node_t()) {
+				(*this).clear(a);
+				for(int i = 0; i < _siz; i++)
+					nv[i] = b;
+			}
+	};
+	template<const unsigned _siz, typename _edge_t> class graph_ev {
+		private:
+			std::vector< std::pair<int, _edge_t> > g[_siz];
+			bool directed;
+		public:
+			void clear(bool a) {
+				directed = a;
+				for(int i = 0; i < _siz; i++)
+					g[i].clear();
+			}
+			void connect(int i, int j, _edge_t v) {
+#if __cplusplus >= 201103L
+				g[i].emplace_back(j, v);
+				if(directed == false)
+					g[j].emplace_back(i, v);
+#else
+				g[i].push_back(std::make_pair(j, v));
+				if(directed == false)
+					g[j].push_back(std::make_pair(i, v));
+#endif
+			}
+			graph_ev<_siz, _edge_t>(bool a) {
+				clear(a);
+			}
+			graph_ev<_siz, _edge_t>() {
+				clear(false);
+			}
+			std::vector< std::pair<int, _edge_t> >& get(int i) {
+				return g[i];
+			}
+	};
+	template<const unsigned _siz, typename _edge_t, typename _node_t> class graph_env : public graph_ev<_siz, _edge_t> {
+		private:
+			_node_t nv[_siz];
+		public:
+			_node_t& val(int i) {
+				return nv[i];
+			}
+			_node_t& operator [](int i) {
+				return val(i);
+			}
+			graph_env<_siz, _edge_t, _node_t>(bool a = false, _node_t b = _node_t()) {
+				(*this).clear(a);
+				for(int i = 0; i < _siz; i++)
+					nv[i] = b;
+			}
+	};
+}
+#endif

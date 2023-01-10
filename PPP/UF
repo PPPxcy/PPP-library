@@ -1,0 +1,148 @@
+#ifndef __PPP__UF__
+#define __PPP__UF__ 'u'
+namespace PPP {
+	namespace UF_MODE {
+		template<const unsigned _Size> class UF {
+			private:
+				int f[_Size];
+				template<typename _Tp> void SWAP(_Tp x, _Tp y) {
+					_Tp tmp;
+					tmp = x, x = y, y = tmp;
+				}
+			public:
+				UF() {
+					clear();
+				}
+				void clear() {
+					for(int i = 0; i < _Size; i++)
+						f[i] = i;
+				}
+				int find(int x) {
+					if(f[x] == x)
+						return x;
+					return f[x] = find(f[x]);
+				}
+				void merge(int i, int j) {
+					i = find(i), j = find(j);
+					if(i == j)
+						return;
+					if(i > j)
+						SWAP(i, j);
+					f[j] = i;
+				}
+				bool same(int i, int j) {
+					return find(i) == find(j);
+				}
+		};
+		template<const unsigned _Size, typename _Val> class UF_VAL {
+			private:
+				int f[_Size];
+				_Val v[_Size];
+				template<typename _Tp> void SWAP(_Tp x, _Tp y) {
+					_Tp tmp;
+					tmp = x, x = y, y = tmp;
+				}
+			public:
+				UF_VAL() {
+					clear(_Val());
+				}
+				UF_VAL(_Val vclean) {
+					clear(vclean);
+				}
+				void clear(_Val vclean) {
+					for(int i = 0; i < _Size; i++)
+						f[i] = i, v[i] = vclean;
+				}
+				int find(int x) {
+					if(f[x] == x)
+						return x;
+					return f[x] = find(f[x]);
+				}
+				_Val getval(int i) {
+					return v[find(i)];
+				}
+				void setval(int i, _Val x) {
+					v[find(i)] = x;
+				}
+				void merge(int i, int j, _Val newval) {
+					i = find(i), j = find(j);
+					if(i == j)
+						return;
+					if(i > j)
+						SWAP(i, j);
+					f[j] = i, v[i] = newval;
+				}
+				bool same(int i, int j) {
+					return find(i) == find(j);
+				}
+		};
+		template<const unsigned _Size> class UF_UNDO {
+			private:
+				class message {
+					public:
+						int first, second;
+						bool third;
+				};
+				int f[_Size], r[_Size];
+				stack<message, _Size> s;
+				template<typename _Tp> void SWAP(_Tp x, _Tp y) {
+					_Tp tmp;
+					tmp = x, x = y, y = tmp;
+				}
+			public:
+				UF_UNDO() {
+					clear();
+				}
+				void clear() {
+					for(int i = 0; i < _Size; i++)
+						f[i] = i, r[i] = 1;
+					while(!s.empty())
+						s.pop();
+				}
+				int find(int x) {
+					if(f[x] == x)
+						return x;
+					return find(f[x]);
+				}
+				void merge(int i, int j) {
+					int tmp;
+					i = find(i), j = find(j);
+					if(i == j) {
+						message LOG;
+						LOG = message(-1, 0, 0);
+						s.push(LOG);
+						return;
+					}
+					if(i > j)
+						SWAP(i, j);
+					if(r[i] < r[j])
+						SWAP(i, j);
+					message LOG;
+					LOG = message(i, j, (r[i] == r[j]));
+					s.push(LOG);
+					if(r[i] == r[j])
+						r[i]++;
+					f[j] = i;
+				}
+				bool same(int i, int j) {
+					return find(i) == find(j);
+				}
+				void undo(int k) {
+					if(k > s.size())
+						k = s.size();
+					for(int i = 1; i <= k; i++) {
+						message tmp = s.top();
+						s.pop();
+						if(tmp.first == -1)
+							continue;
+						int u = tmp.first, v = tmp.second;
+						bool rise = tmp.third;
+						f[v] = v;
+						if(rise)
+							r[u]--;
+					}
+				}
+		};
+	}
+}
+#endif

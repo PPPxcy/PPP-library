@@ -1,0 +1,14 @@
+#ifndef __PPP_DEBUG__
+#define __PPP_DEBUG__ 'u'
+#include <PPP/random>
+#include <iostream>
+namespace PPP {
+	auto &ERR_OUTPUT = std::cerr;
+	mt19937_u RANDOM_OUTPUT;
+	namespace BUG {
+		void debug() {
+			ERR_OUTPUT << "`1234567890-=qwertyuiop[]\\asdfghjkl;\'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?"[RANDOM_OUTPUT() % 94];
+		}
+	}
+};
+#endif

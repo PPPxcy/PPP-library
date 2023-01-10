@@ -1,0 +1,320 @@
+#ifndef __PPP_MODINT__
+#define __PPP_MODINT__ 't'
+#if __PPP_MODINT__ != 'l'
+#include <PPP/maths_base>
+namespace PPP {
+	template<const long long pmod> class modint {
+		private:
+			long long val;
+			class mod_base {
+				protected:
+					struct i2_t {
+						long long first, second;
+						i2_t() {
+							first = second = 0;
+						}
+						i2_t(long long fffff, long long ssssss) {
+							first = fffff, second = ssssss;
+						}
+					};
+					static i2_t ex_gcd(long long x, long long y) {
+						if(y == 0)
+							return i2_t(1, 0);
+						i2_t tmp = ex_gcd(y, x % y);
+						return i2_t(tmp.second, tmp.first - x / y * tmp.second);
+					}
+				public:
+					static long long smallmod(long long a) {
+						if(a >= pmod)
+							while(a >= pmod)
+								a -= pmod;
+						else if(a < 0)
+							while(a < 0)
+								a += pmod;
+						return a;
+					}
+					static long long largemod(long long a) {
+						a %= pmod;
+						if(a >= 0)
+							return a;
+						if(a < 0)
+							return a + pmod;
+					}
+					static long long inv(long long v) {
+					#ifdef assert
+						assert(gcd(v, pmod) == 1);
+					#endif
+						return largemod(ex_gcd(v, pmod).first);
+					}
+			};
+		public:
+			modint<pmod> operator + (modint<pmod> a) const {
+				return modint<pmod>(mod_base::mod_base::smallmod(val + a.val));
+			}
+			modint<pmod> operator - (modint<pmod> a) const {
+				return modint<pmod>(mod_base::smallmod(val - a.val));
+			}
+			modint<pmod> operator * (modint<pmod> a) const {
+				return modint<pmod>(mod_base::largemod(val * a.val));
+			}
+			modint<pmod> operator / (modint<pmod> a) const {
+				return modint<pmod>(mod_base::largemod(val * mod_base::inv(a.val)));
+			}
+			modint<pmod> operator ^ (long long a) const {
+				modint<pmod> tmp, res(1), &self = (*this);
+				unsigned long long A;
+				if(a < 0)
+					tmp = !self, A = -a;
+				else
+					tmp = self, A = a;
+				for(long long i = 1; i <= A; tmp *= tmp, i <<= 1)
+					if(A & i)
+						res *= tmp;
+				return res;
+			}
+			modint<pmod> operator + () const {
+				return (*this);
+			}
+			modint<pmod> operator - () const {
+				if(val == 0)
+					return modint<pmod>(0);
+				return modint<pmod>(pmod - val);
+			}
+			modint<pmod> operator * () const {
+				return (*this);
+			}
+			modint<pmod> operator ! () const {
+				return modint<pmod>(mod_base::inv(val));
+			}
+			modint<pmod>& operator ++ () {
+				val = val + 1;
+				if(val == pmod)
+					val = 0;
+				return (*this);
+			}
+			modint<pmod>& operator -- () {
+				if(val == 0)
+					val = pmod;
+				val = val - 1;
+				return (*this);
+			}
+			modint<pmod> operator ++ (int) {
+				modint<pmod> lval = (*this);
+				val = val + 1;
+				if(val == pmod)
+					val = 0;
+				return lval;
+			}
+			modint<pmod> operator -- (int) {
+				modint<pmod> lval = (*this);
+				if(val == 0)
+					val = pmod;
+				val = val - 1;
+				return lval;
+			}
+			modint<pmod>& operator += (modint<pmod> a) {
+				val = mod_base::smallmod(val + a.val);
+				return (*this);
+			}
+			modint<pmod>& operator -= (modint<pmod> a) {
+				val = mod_base::smallmod(val - a.val);
+				return (*this);
+			}
+			modint<pmod>& operator *= (modint<pmod> a) {
+				val = mod_base::largemod(val * a.val);
+				return (*this);
+			}
+			modint<pmod>& operator /= (modint<pmod> a) {
+				val = mod_base::largemod(val * INV(a.val));
+				return (*this);
+			}
+			modint<pmod>& operator ^= (long long a) {
+				modint<pmod> tmp, &self = (*this);
+				unsigned long long A;
+				if(a < 0)
+					tmp = !self, A = -a;
+				else
+					tmp = self, A = a;
+				self = 1;
+				for(unsigned long long i = 1; i <= A; tmp *= tmp, i <<= 1)
+					if(A & i)
+						self *= tmp;
+				return self;
+			}
+			bool operator == (modint<pmod> a) const {
+				return val == a.val;
+			}
+			bool operator != (modint<pmod> a) const {
+				return val != a.val;
+			}
+			static constexpr long long mod() {
+				return pmod;
+			}
+			long long value() const {
+				return val;
+			}
+			modint<pmod>() : val(0) {}
+			template<typename _Tp> modint<pmod>(_Tp a) : val(mod_base::largemod(a)) {}
+	};
+	typedef modint<998244353> modint_998244353;
+	typedef modint<1000000007> modint_1000000007;
+
+	template<const long long id> class dmodint {
+		private:
+			long long val;
+			static long long dmod;
+			class mod_base {
+				protected:
+					struct i2_t {
+						long long first, second;
+						i2_t() {
+							first = second = 0;
+						}
+						i2_t(long long fffff, long long ssssss) {
+							first = fffff, second = ssssss;
+						}
+					};
+					static i2_t ex_gcd(long long x, long long y) {
+						if(y == 0)
+							return i2_t(1, 0);
+						i2_t tmp = ex_gcd(y, x % y);
+						return i2_t(tmp.second, tmp.first - x / y * tmp.second);
+					}
+				public:
+					static long long smallmod(long long a) {
+						if(a >= dmod)
+							while(a >= dmod)
+								a -= dmod;
+						else if(a < 0)
+							while(a < 0)
+								a += dmod;
+						return a;
+					}
+					static long long largemod(long long a) {
+						a %= dmod;
+						if(a >= 0)
+							return a;
+						if(a < 0)
+							return a + dmod;
+					}
+					static long long inv(long long v) {
+					#ifdef assert
+						assert(gcd(v, dmod) == 1);
+					#endif
+						return largemod(ex_gcd(v, dmod).first);
+					}
+			};
+		public:
+			dmodint<id> operator + (dmodint<id> a) const {
+				return dmodint<id>(mod_base::smallmod(val + a.val));
+			}
+			dmodint<id> operator - (dmodint<id> a) const {
+				return dmodint<id>(mod_base::smallmod(val - a.val));
+			}
+			dmodint<id> operator * (dmodint<id> a) const {
+				return dmodint<id>(mod_base::largemod(val * a.val));
+			}
+			dmodint<id> operator / (dmodint<id> a) const {
+				return dmodint<id>(mod_base::largemod(val * mod_base::inv(a.val)));
+			}
+			dmodint<id> operator ^ (long long a) const {
+				dmodint<id> tmp, res(1), &self = (*this);
+				unsigned long long A;
+				if(a < 0)
+					tmp = !self, A = -a;
+				else
+					tmp = self, A = a;
+				for(long long i = 1; i <= A; tmp *= tmp, i <<= 1)
+					if(A & i)
+						res *= tmp;
+				return res;
+			}
+			dmodint<id> operator + () const {
+				return (*this);
+			}
+			dmodint<id> operator - () const {
+				if(val == 0)
+					return dmodint<id>(0);
+				return dmodint<id>(dmod - val);
+			}
+			dmodint<id> operator * () const {
+				return (*this);
+			}
+			dmodint<id> operator ! () const {
+				return dmodint<id>(mod_base::inv(val));
+			}
+			dmodint<id>& operator ++ () {
+				val = val + 1;
+				if(val == dmod)
+					val = 0;
+				return (*this);
+			}
+			dmodint<id>& operator -- () {
+				if(val == 0)
+					val = dmod;
+				val = val - 1;
+				return (*this);
+			}
+			dmodint<id> operator ++ (int) {
+				dmodint<id> lval = (*this);
+				val = val + 1;
+				if(val == dmod)
+					val = 0;
+				return lval;
+			}
+			dmodint<id> operator -- (int) {
+				dmodint<id> lval = (*this);
+				if(val == 0)
+					val = dmod;
+				val = val - 1;
+				return lval;
+			}
+			dmodint<id>& operator += (dmodint<id> a) {
+				val = mod_base::smallmod(val + a.val);
+				return (*this);
+			}
+			dmodint<id>& operator -= (dmodint<id> a) {
+				val = mod_base::smallmod(val - a.val);
+				return (*this);
+			}
+			dmodint<id>& operator *= (dmodint<id> a) {
+				val = mod_base::largemod(val * a.val);
+				return (*this);
+			}
+			dmodint<id>& operator /= (dmodint<id> a) {
+				val = mod_base::largemod(val * mod_base::inv(a.val));
+				return (*this);
+			}
+			dmodint<id>& operator ^= (long long a) {
+				dmodint<id> tmp, &self = (*this);
+				unsigned long long A;
+				if(a < 0)
+					tmp = !self, A = -a;
+				else
+					tmp = self, A = a;
+				self = 1;
+				for(unsigned long long i = 1; i <= A; tmp *= tmp, i <<= 1)
+					if(A & i)
+						self *= tmp;
+				return self;
+			}
+			bool operator == (dmodint<id> a) const {
+				return val == a.val;
+			}
+			bool operator != (dmodint<id> a) const {
+				return val != a.val;
+			}
+			static long long& mod() {
+				return dmod;
+			}
+			long long value() const {
+				return val;
+			}
+			dmodint<id>() : val(0) {}
+			template<typename _Tp> dmodint<id>(_Tp a) : val(mod_base::largemod(a)) {}
+	};
+	template<const long long id> long long dmodint<id>::dmod = 998244353;
+	template<const long long id> using dynamic_modint = dmodint<id>;
+}
+#endif
+#endif

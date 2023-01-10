@@ -1,0 +1,17 @@
+#ifndef __PPP_MATHS_BASE__
+#define __PPP_MATHS_BASE__ 'u'
+namespace PPP {
+	template<typename x> x gcd(x a, x b) {
+		return a == 0 ? b : gcd(b % a, a);
+	}
+	template<typename x> x lcm(x a, x b) {
+		return a / lcm(a, b) * b;
+	}
+	template<typename x> x sqr(x a) {
+		return a * a;
+	}
+	template<typename x, typename y> x fpow(x a, y b) {
+		return b == 0 ? 1 : sqr(fpow(a, b >> 1)) * (b & 1 ? a : 1);
+	}
+}
+#endif

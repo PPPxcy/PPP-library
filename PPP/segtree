@@ -1,0 +1,58 @@
+#ifndef __PPP_SEGTREE__
+#define __PPP_SEGTREE__ 'u'
+namespace PPP {
+#define tl template
+#define tp typename
+#define cu const unsigned int
+	tl<cu _siz, tp valtype, tp changetype, tp returntype, tp fn, tp lm> class segtree {
+		private:
+			valtype t[_siz];
+			lm lim;
+			fn fnc;
+			void clear(int p, int l, int r) {
+				if(l == r)
+					return t[p] = lim.org, void();
+				int mid = l + r >> 1;
+				clear(p << 1, l, mid), clear(p << 1 | 1, mid + 1, r);
+				t[p] = fnc.pushup(t[p << 1], t[p << 1 | 1]);
+			}
+			void modify(int p, int l, int r, int a, int b, changetype v) {
+				if(r < a || b < l)
+					return;
+				if(a <= l && r <= b)
+					return fnc.change(t[p], v);
+				int mid = l + r >> 1;
+				fnc.pushdown(t[p], t[p << 1], t[p << 1 | 1]);
+				modify(p << 1, l, mid, a, b, v), modify(p << 1 | 1, mid + 1, r, a, b, v);
+				t[p] = fnc.pushup(t[p << 1], t[p << 1 | 1]);
+			}
+			returntype query(int p, int l, int r, int a, int b) {
+				if(r < a || b < l)
+					return fnc.org();
+				if(a <= l && r <= b)
+					return fnc.get(t[p]);
+				int mid = l + r >> 1;
+				fnc.pushdown(t[p], t[p << 1], t[p << 1 | 1]);
+				return fnc.returnup(query(p << 1, l, mid, a, b), query(p << 1 | 1, mid + 1, r, a, b));
+			}
+		public:
+			unsigned int length;
+			void clear(int len) {
+				length = len, clear(1, 1, length);
+			}
+			void modify(int a, int b, changetype v) {
+				if(a < 1 || length < b)
+					fnc.badmessage();
+				modify(1, 1, length, a, b, v);
+			}
+			returntype query(int a, int b) {
+				if(a < 1 || length < b)
+					return fnc.badmessage(), fnc.org();
+				return query(1, 1, length, a, b);
+			}
+	};
+#undef tp
+#undef tl
+#undef cu
+}
+#endif

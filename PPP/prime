@@ -1,0 +1,40 @@
+#ifndef __PPP_PRIME__
+#define __PPP_PRIME__ 'l'
+#if __PPP_PRIME__ != 'l'
+#include <PPP/maths_base> 
+#include <PPP/random>
+namespace PPP {
+	namespace prime {
+		namespace moddy {
+			template<typename x> x sq(x a, x c) {
+				return a * a % c;
+			}
+			template<typename x, typename y> x fpw(x a, y b, x c) {
+				return b == 0 ? 1 : sq(fpw(a, b >> 1, c), c) * (b & 1 ? a : 1) % c;
+			}
+		}
+		template<typename __int_type> bool is_prime(__int_type a) {
+		#ifdef assert
+			assert(a > 0);
+		#endif
+			if(a == 1)
+				return false;
+			if(a % 2 == 0)
+				return a == 2;
+			for(__int_type i = 3; i * i <= a; i += 2)
+				if(a % i == 0)
+					return false;
+			return true;
+		}
+		template<typename __int_type> bool test_prime(__int_type a, unsigned test_time = 11) {
+			if(a < 3)
+				return a == 2;
+			for(unsigned i = 0; i < test_time; i++)
+				if(moddy::fpw(getrand(2, a - 1), n - 1, n) != 1)
+					return false;
+			return true;
+		}
+	}
+}
+#endif
+#endif

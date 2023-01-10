@@ -1,0 +1,31 @@
+#ifndef __PPP_SORT__
+#define __PPP_SORT__ 'u'
+namespace PPP {
+	template<typename _Tp, typename _Comp> void merge_sort(_Tp *l, _Tp *r, _Comp compare) {
+		_Tp *f = new _Tp[r - l];
+		for(int b = 1; b <= r - l; b <<= 1)
+			for(_Tp *i = l; i + b < r; ) {
+				_Tp *L = i, *M = i + b, *R = i + b + b;
+				if(R > r)
+					R = r;
+				_Tp *left = L, *right = M, *kf = f;
+				while(left != M && right != R)
+					if(compare(*left, *right))
+						*kf = *left, kf++, left++;
+					else
+						*kf = *right, kf++, right++;
+				while(left != M)
+					*kf = *left, kf++, left++;
+				while(right != R)
+					*kf = *right, kf++, right++;
+				for(_Tp *j = f; j < kf; i++, j++)
+					*i = *j;
+			}
+		delete []f;
+	}
+	template<typename _Tp> void merge_sort(_Tp *l, _Tp *r) {
+		auto compare = [](_Tp a, _Tp b) -> bool { return a < b; };
+		merge_sort(l, r, compare);
+	}
+}
+#endif

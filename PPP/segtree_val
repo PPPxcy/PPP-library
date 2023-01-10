@@ -1,0 +1,77 @@
+#ifndef __PPP_SEGTREE_VAL__
+#define __PPP_SEGTREE_VAL__ 'u'
+namespace PPP {
+	template<const unsigned msize> struct segtree_val {
+	  private:	
+		int frt, min, max;
+		struct node {
+			int cnt, l, r;
+			node(int a = 0, int b = 0, int c = 0) {
+				cnt = a, l = b, r = c;
+			}
+		} t[msize];
+		int newnode() {
+				frt++, t[frt] = node(0, 0, 0);
+				return frt;
+		}
+		void modify(int p, int l, int r, int k, int v) {
+			if(l == r)
+				return t[p].cnt += v, void();
+			int mid = l + r >> 1;
+			if(k <= mid) {
+				if(t[p].l == 0)
+					t[p].l = newnode();
+				modify(t[p].l, l, mid, k, v);
+			} else {
+				if(t[p].r == 0)
+					t[p].r = newnode();
+				modify(t[p].r, mid + 1, r, k, v);
+			}
+			t[p].cnt = t[t[p].l].cnt + t[t[p].r].cnt;
+		}
+		int query(int p, int l, int r, int a, int b) {
+			if(r < a || b < l)
+				return 0;
+			if(a <= l && r <= b)
+				return t[p].cnt;
+			int mid = l + r >> 1, res = 0;
+			if(t[p].l != 0)
+				res += query(t[p].l, l, mid, a, b);
+			if(t[p].r != 0)
+				res += query(t[p].r, mid + 1, r, a, b);
+			return res;
+		}
+		int find(int p, int l, int r, int k) {
+			if(l == r)
+				return l;
+			int mid = l + r >> 1;
+			if(k <= t[t[p].l].cnt)
+				return find(t[p].l, l, mid, k);
+			else
+				return find(t[p].r, mid + 1, r, k - t[t[p].l].cnt);
+		}
+	  public:
+		void modify(int k, int v) {
+			modify(1, min, max, k, v);
+		}
+		int query(int k) {
+			return query(1, min, max, min, k);
+		}
+		int query(int l, int r) {
+			return query(1, min, max, l, r);
+		}
+		int find(int k) {
+			return find(1, min, max, k);
+		}
+		int prev(int k) {
+			return find(1, min, max, query(1, min, max, min, k - 1));
+		}
+		int next(int k) {
+			return find(1, min, max, query(1, min, max, min, k) + 1);		
+		}
+		segtree_val(int a, int b) {
+			t[0] = t[1] = node(0, 0, 0), frt = 1, min = a, max = b;
+		}
+	};
+}
+#endif

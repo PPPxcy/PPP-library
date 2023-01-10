@@ -1,0 +1,11 @@
+#ifndef __PPP_MATHS__
+#define __PPP_MATHS__ 'u'
+
+#include <PPP/modint>
+#include <PPP/maths_base>
+
+#if __cplusplus >= 201103L
+#include <PPP/matrix>
+#endif
+
+#endif
