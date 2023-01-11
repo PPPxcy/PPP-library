@@ -103,6 +103,9 @@ namespace PPP {
 				for(iterator _it = _val.begin(); _it != _val.end(); _it++)
 					push_back(*_it);
 			}
+			template<typename... _Tps> void emplace_back(_Tps ..._vals) {
+				push_back(_Tp(_vals...));
+			}
 			void pop_back() {
 			#ifdef assert
 				assert(empty() == false);
