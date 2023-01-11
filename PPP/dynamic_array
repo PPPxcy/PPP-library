@@ -1,0 +1,202 @@
+#ifndef __PPP_DYNAMIC_ARRAY__
+#define __PPP_DYNAMIC_ARRAY__ 't'
+#if __PPP_DYNAMIC_ARRAY__ != 'l'
+namespace PPP {
+	template<typename _Tp> class dynamic_array {
+		public:
+			typedef _Tp* iterator;
+			typedef const _Tp* const_iterator;
+		protected:
+			iterator _beg, _end, _eos;
+		public:
+			iterator begin() {
+				return _beg;
+			}
+			const_iterator begin() const {
+				return _beg;
+			}
+			iterator end() {
+				return _end;
+			}
+			const_iterator end() const {
+				return _end;
+			}
+			void swap(dynamic_array<_Tp> &v) {
+				iterator _tmp = _beg;
+				_beg = v._beg, v._beg = _tmp, 
+				_tmp = _end, _end = v._end, v._end = _tmp, 
+				_tmp = _eos, _eos = v._eos, v._eos = _tmp; 
+			}
+		public:
+			bool empty() const {
+				return _end == _beg;
+			}
+			unsigned size() const {
+				return _end - _beg;
+			}
+			unsigned capacity() const {
+				return _eos - _beg;
+			}
+			dynamic_array<_Tp>& operator = (dynamic_array<_Tp> _val) {
+				swap(_val);
+				return *this;
+			}
+			dynamic_array<_Tp> operator + (dynamic_array<_Tp> _val) const {
+				dynamic_array<_Tp> _tmp(*this);
+				_tmp += _val;
+				return _tmp;
+			}
+			dynamic_array<_Tp>& operator += (dynamic_array<_Tp> _val) {
+				push_back(_val);
+				return *this;
+			}
+			_Tp& operator [] (unsigned _k) {
+				return _beg[_k];
+			}
+			const _Tp operator [] (unsigned _k) const {
+				return _beg[_k];
+			}
+		public:
+			void request(unsigned _k) {
+				iterator _tmpbeg = new _Tp[_k];
+				if(_beg != nullptr) {
+					unsigned _siz = size();
+					if(_k < _siz)
+						_siz = _k;
+					for(unsigned i = 0; i < _siz; i++)
+						_tmpbeg[i] = _beg[i];
+					delete []_beg;
+					_beg = _tmpbeg, 
+					_end = _beg + _siz,
+					_eos = _beg + _k;
+				} else
+					_beg = _tmpbeg, 
+					_end = _beg,
+					_eos = _beg + _k;
+			}
+			void resize(unsigned _k, _Tp v = _Tp()) {
+				if(_k <= size()) {
+					//	1/¦Ð¡Ö0.318359375 = 163/512
+					if(_k <= ((unsigned long long)(capacity()) * 163 >> 9))
+						request(((unsigned long long)(capacity()) * 163 >> 9));
+					//	Be smaller
+					_end = _beg + _k;
+				} else {
+					if(_k > capacity())
+						request(_k);
+					while(_end < _beg + _k)
+						push_back(v);
+				}
+			}
+			void push_back(_Tp _val) {
+				if(_end == _eos)
+				//	e ¡Ö2.71875 = 87/32
+					request(((unsigned long long)(capacity()) * 87 >> 5) + 1);
+				//	Be bigger
+				*_end++ = _val;
+			}
+			void push_back(_Tp _val, unsigned _k) {
+				while(_k--)
+					push_back(_val);
+			}
+			void push_back(dynamic_array<_Tp> _val) {
+				for(iterator _it = _val.begin(); _it != _val.end(); _it++)
+					push_back(*_it);
+			}
+			void pop_back() {
+			#ifdef assert
+				assert(empty() == false);
+			#endif
+				_end--;
+				//	1/¦Ð¡Ö0.318359375 = 163/512
+				if(size() <= ((unsigned long long)(capacity()) * 163 >> 9))
+					request(((unsigned long long)(capacity()) * 163 >> 9));
+				//	Be smaller
+			}
+			void pop_back(unsigned _k) {
+			#ifdef assert
+				assert(_beg + _k <= _end);
+			#endif
+				_end -= _k;
+				//	1/¦Ð¡Ö0.318359375 = 163/512
+				if(size() <= ((unsigned long long)(capacity()) * 163 >> 9))
+					request(((unsigned long long)(capacity()) * 163 >> 9));
+				//	Be smaller
+			}
+			void insert(unsigned _k, _Tp _val) {
+			#ifdef assert
+				assert(_k <= size());
+			#endif
+				push_back(_Tp());
+				iterator _it = _end - 2, _lim = _beg + _k;
+				while(_it >= _lim)
+					*(_it + 1) = *_it, _it--;
+				*_lim = _val;
+			}
+			void insert(unsigned _k, _Tp _val, unsigned _cnt) {
+			#ifdef assert
+				assert(_k <= size());
+			#endif
+				push_back(_Tp(), _cnt);
+				iterator _it = _end - _cnt - 1, _lim = _beg + _k;
+				while(_it >= _lim)
+					*(_it + _cnt) = *_it;
+				for(unsigned i = 0; i < _cnt; i++)
+					_lim[i] = _val;
+			}
+			void insert(unsigned _k, dynamic_array<_Tp> _val) {
+			#ifdef assert
+				assert(_k <= size());
+			#endif
+				unsigned _cnt = _val.size();
+				push_back(_Tp(), _cnt);
+				iterator _it = _end - _cnt - 1, _lim = _beg + _k;
+				while(_it >= _lim)
+					*(_it + _cnt) = *_it;
+				for(unsigned i = 0; i < _cnt; i++)
+					_lim[i] = _val[i];
+			}
+			void erase(unsigned _k) {
+			#ifdef assert
+				assert(_k < size());
+			#endif
+				iterator _it = _beg + _k + 1;
+				while(_it < _end)
+					*(_it - 1) = *_it, ++_it;
+				pop_back();
+			}
+			void erase(unsigned _k, unsigned _cnt) {
+			#ifdef assert
+				assert(_k < size());
+			#endif
+				iterator _it = _beg + _k + _cnt;
+				while(_it < _end)
+					*(_it - _cnt) = *_it, ++_it;
+				pop_back(_cnt);
+			}
+		public:
+			dynamic_array<_Tp>() : _beg(nullptr), _end(nullptr), _eos(nullptr) {}
+			dynamic_array<_Tp>(unsigned _k, _Tp _val) : _beg(nullptr), _end(nullptr), _eos(nullptr) {
+				request(_k);
+				for(unsigned i = 0; i < _k; i++)
+					_beg[i] = _val;
+			}
+			template<typename _TpIter> dynamic_array<_Tp>(_TpIter _left, _TpIter _right) : _beg(nullptr), _end(nullptr), _eos(nullptr) {
+				request(_right - _left);
+				while(_left != _right)
+					push_back(*_left++);
+			}
+			dynamic_array<_Tp>(const dynamic_array<_Tp> &_val) : _beg(nullptr), _end(nullptr), _eos(nullptr) {
+				operator = (_val);
+			}
+			dynamic_array<_Tp>(dynamic_array<_Tp> &&_val) : _beg(nullptr), _end(nullptr), _eos(nullptr) {
+				swap(_val);
+			}
+			~dynamic_array<_Tp>() {
+				if(_beg != nullptr)
+					delete []_beg, _beg = _end = _eos = nullptr;
+			}
+	};
+}
+#endif
+#endif
