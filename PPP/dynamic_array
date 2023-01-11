@@ -76,7 +76,7 @@ namespace PPP {
 			}
 			void resize(unsigned _k, _Tp v = _Tp()) {
 				if(_k <= size()) {
-					//	1/¦Ð¡Ö0.318359375 = 163/512
+					//	1/Ï€ â‰ˆ 0.318359375 = 163/512
 					if(_k <= ((unsigned long long)(capacity()) * 163 >> 9))
 						request(((unsigned long long)(capacity()) * 163 >> 9));
 					//	Be smaller
@@ -90,7 +90,7 @@ namespace PPP {
 			}
 			void push_back(_Tp _val) {
 				if(_end == _eos)
-				//	e ¡Ö2.71875 = 87/32
+				//	e â‰ˆ 2.71875 = 87/32
 					request(((unsigned long long)(capacity()) * 87 >> 5) + 1);
 				//	Be bigger
 				*_end++ = _val;
@@ -108,7 +108,7 @@ namespace PPP {
 				assert(empty() == false);
 			#endif
 				_end--;
-				//	1/¦Ð¡Ö0.318359375 = 163/512
+				//	1/Ï€ â‰ˆ 0.318359375 = 163/512
 				if(size() <= ((unsigned long long)(capacity()) * 163 >> 9))
 					request(((unsigned long long)(capacity()) * 163 >> 9));
 				//	Be smaller
@@ -118,7 +118,7 @@ namespace PPP {
 				assert(_beg + _k <= _end);
 			#endif
 				_end -= _k;
-				//	1/¦Ð¡Ö0.318359375 = 163/512
+				//	1/Ï€ â‰ˆ 0.318359375 = 163/512
 				if(size() <= ((unsigned long long)(capacity()) * 163 >> 9))
 					request(((unsigned long long)(capacity()) * 163 >> 9));
 				//	Be smaller
