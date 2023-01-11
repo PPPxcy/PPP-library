@@ -6,7 +6,7 @@ namespace PPP {
 	template<const unsigned h, const unsigned w, typename _Val = int> class matrix {
 		public:
 			_Val c[h][w];
-			matrix<h, w, _Val> operator + (matrix<h, w, _Val> a) {
+			matrix<h, w, _Val> operator + (matrix<h, w, _Val> a) const {
 				matrix<h, w, _Val> res;
 				loop(i, h)	loop(j, w)
 					res(i, j) = c[i][j] + a(i, j);
@@ -17,7 +17,7 @@ namespace PPP {
 					c[i][j] += a(i, j);
 				return (*this);
 			}
-			template<const unsigned p, const unsigned q> matrix<h + p, w + q, _Val> operator ^ (matrix<p, q, _Val> a) {
+			template<const unsigned p, const unsigned q> matrix<h + p, w + q, _Val> operator ^ (matrix<p, q, _Val> a) const {
 				matrix<h + p, w + q, _Val> res;
 				loop(i, h)	loop(j, w)
 					res(i, j) = c[i][j];
@@ -25,7 +25,7 @@ namespace PPP {
 					res(h + i, w + j) = a(i, j);
 				return res;
 			}
-			matrix<h, w, _Val> operator - (matrix<h, w, _Val> a) {
+			matrix<h, w, _Val> operator - (matrix<h, w, _Val> a) const {
 				matrix<h, w, _Val> res;
 				loop(i, h)	loop(j, w)
 					res(i, j) = c[i][j] - a(i, j);
@@ -36,7 +36,7 @@ namespace PPP {
 					c[i][j] -= a(i, j);
 				return (*this);
 			}
-			template<const unsigned p> matrix<h, p, _Val> operator * (matrix<w, p, _Val> a) {
+			template<const unsigned p> matrix<h, p, _Val> operator * (matrix<w, p, _Val> a) const {
 				matrix<h, p, _Val> res;
 				loop(i, h)	loop(j, p)	loop(k, w)
 					res(i, j) += c[i][k] * a(k, j);
@@ -48,7 +48,16 @@ namespace PPP {
 					res(i, j) += c[i][k] * a(k, j);
 				return (*this) = res;
 			}
-			_Val& operator () (int i, int j) {
+			_Val[w] operator [] (int i) const {
+			#ifdef assert
+				assert(i < h);
+			#endif
+				return c[i];
+			}
+			_Val& operator () (int i, int j) const {
+			#ifdef assert
+				assert(i < h && j < w);
+			#endif
 				return c[i][j];
 			}
 			matrix<h, w, _Val>() {
