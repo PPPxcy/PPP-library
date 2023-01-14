@@ -3,12 +3,13 @@
 namespace PPP {
 	template<typename _Tp, typename _Comp> void merge_sort(_Tp *l, _Tp *r, _Comp compare) {
 		_Tp *f = new _Tp[r - l];
-		for(int b = 1; b <= r - l; b <<= 1)
-			for(_Tp *i = l; i + b < r; ) {
+		for(int b = 1; b <= r - l; b <<= 1) {
+			_Tp *kf = l, *KFEND = l;
+			for(_Tp *i = l; i + b < r; i += b + b, KFEND += b + b) {
 				_Tp *L = i, *M = i + b, *R = i + b + b;
 				if(R > r)
 					R = r;
-				_Tp *left = L, *right = M, *kf = f;
+				_Tp *left = L, *right = M;
 				while(left != M && right != R)
 					if(compare(*left, *right))
 						*kf = *left, kf++, left++;
@@ -18,9 +19,10 @@ namespace PPP {
 					*kf = *left, kf++, left++;
 				while(right != R)
 					*kf = *right, kf++, right++;
-				for(_Tp *j = f; j < kf; i++, j++)
-					*i = *j;
 			}
+			for(_Tp *i = l; kf != KFEND; kf++, i++)
+				*i = *kf;
+		}
 		delete []f;
 	}
 	template<typename _Tp> void merge_sort(_Tp *l, _Tp *r) {
