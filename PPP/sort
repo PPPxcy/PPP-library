@@ -2,14 +2,15 @@
 #define __PPP_SORT__ 'u'
 namespace PPP {
 	template<typename _Tp, typename _Comp> void merge_sort(_Tp *l, _Tp *r, _Comp compare) {
-		_Tp *f = new _Tp[r - l];
-		for(int b = 1; b <= r - l; b <<= 1) {
-			_Tp *kf = l, *KFEND = l;
-			for(_Tp *i = l; i + b < r; i += b + b, KFEND += b + b) {
-				_Tp *L = i, *M = i + b, *R = i + b + b;
+		unsigned _siz = r - l;
+		_Tp *f = new _Tp[_siz], *ll = f, *rr = f + _siz, 
+			*kf, *i, *L, *M, *R, *left, *right;
+		for(unsigned b = 1; b <= _siz; ) {
+			kf = f, i = l;
+			for(; i + b < r; ) {
+				L = i, M = i + b, R = i + b + b, left = L, right = M;
 				if(R > r)
 					R = r;
-				_Tp *left = L, *right = M;
 				while(left != M && right != R)
 					if(compare(*left, *right))
 						*kf = *left, kf++, left++;
@@ -19,9 +20,29 @@ namespace PPP {
 					*kf = *left, kf++, left++;
 				while(right != R)
 					*kf = *right, kf++, right++;
+				i = R;
 			}
-			for(_Tp *i = l; kf != KFEND; kf++, i++)
-				*i = *kf;
+			while(i != r)
+				*kf = *i, *kf++, *i++;
+			b <<= 1, kf = l, i = ll;
+			for(; i + b < rr; ) {
+				L = i, M = i + b, R = i + b + b, left = L, right = M;
+				if(R > rr)
+					R = rr;
+				while(left != M && right != R)
+					if(compare(*left, *right))
+						*kf = *left, kf++, left++;
+					else
+						*kf = *right, kf++, right++;
+				while(left != M)
+					*kf = *left, kf++, left++;
+				while(right != R)
+					*kf = *right, kf++, right++;
+				i = R;
+			}
+			while(i != rr)
+				*kf = *i, *kf++, *i++;
+			b <<= 1;
 		}
 		delete []f;
 	}
