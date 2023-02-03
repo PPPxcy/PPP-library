@@ -1,0 +1,102 @@
+#ifndef __PPP_CRAZY_TYPES__
+#define __PPP_CRAZY_TYPES__ 'u'
+#if __PPP_CRAZY_TYPES__ != 'l'
+namespace PPP {
+	namespace CRAZY_TYPES {
+		namespace IF_TYPE {
+			template<const bool _Val, typename _Tpf, typename _Tps> class if_type;
+			template<typename _Tpf, typename _Tps> class if_type<true, _Tpf, _Tps> {
+				public:
+					typedef _Tpf restype;
+			};
+			template<typename _Tpf, typename _Tps> class if_type<false, _Tpf, _Tps> {
+				public:
+					typedef _Tps restype;
+			};
+		}
+		using IF_TYPE::if_type;
+
+		namespace EQUAL_TYPE {
+			template<typename _Tpf, typename _Tps> class equal_type {
+				public:
+					static const bool res = false;
+			};
+			template<typename _Tp> class equal_type<_Tp, _Tp> {
+				public:
+					static const bool res = true;
+			};
+		}
+		using EQUAL_TYPE::equal_type;
+
+		namespace NOT_TYPE {
+			template<const bool _Val> class not_type;
+			template<> class not_type<true> {
+				public:
+					static const bool res = false;
+			};
+			template<> class not_type<false> {
+				public:
+					static const bool res = true;
+			};
+		}
+		using NOT_TYPE::not_type;
+
+		namespace AND_TYPE {
+			template<const bool _Valf, const bool _Vals> class and_type {
+				public:
+					static const bool res = false;
+			};
+			template<> class and_type<true, true> {
+				public:
+					static const bool res = true;
+			};
+		}
+		using AND_TYPE::and_type;
+
+		namespace OR_TYPE {
+			template<const bool _Valf, const bool _Vals> class or_type {
+				public:
+					static const bool res = true;
+			};
+			template<> class or_type<false, false> {
+				public:
+					static const bool res = false;
+			};
+		}
+		using OR_TYPE::or_type;
+
+		namespace XOR_TYPE {
+			template<const bool _Valf, const bool _Vals> class xor_type {
+				public:
+					static const bool res = true;
+			};
+			template<const bool _Val> class xor_type<_Val, _Val> {
+				public:
+					static const bool res = false;
+			};
+		}
+		using XOR_TYPE::xor_type;
+		
+		namespace CNTTER_TYPE {
+			template<const unsigned _cnt, typename ..._Tps> class cntter_type;
+			template<const unsigned _cnt, typename _Tpf, typename ..._Tps> class cntter_type<_cnt, _Tpf, _Tps...> {
+				public:
+					typedef typename cntter_type<_cnt - 1, _Tps...>::restype restype;
+			};
+			template<typename _Tpf, typename ..._Tps> class cntter_type<0, _Tpf, _Tps...> {
+				public:
+					typedef _Tpf restype;
+			};
+		}
+		using CNTTER_TYPE::cntter_type;
+	}
+	using CRAZY_TYPES::if_type;
+	using CRAZY_TYPES::equal_type;
+	using CRAZY_TYPES::not_type;
+	using CRAZY_TYPES::and_type;
+	using CRAZY_TYPES::or_type;
+	using CRAZY_TYPES::xor_type;
+	using CRAZY_TYPES::cntter_type;
+}
+#endif
+#endif

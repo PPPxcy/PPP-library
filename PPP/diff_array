@@ -1,0 +1,31 @@
+#ifndef __PPP_DIFF_ARRAY__
+#define __PPP_DIFF_ARRAY__ 'u'
+#if __PPP_DIFF_ARRAY__ != 'l'
+namespace PPP {
+	template<typename _Tp, const int _llim, const int _ulim> class diff_array {
+		//	[_llim, _ulim)
+		private:
+			_Tp _arr[_ulim - _llim + 1];
+		public:
+			operator _Tp*() const {
+				return (int* const)(_arr) - _llim;
+			}
+			_Tp& operator [] (int _k) {
+				return *(_arr - _llim + _k);
+			}
+			constexpr _Tp operator [] (int _k) const {
+				return *(_arr - _llim + _k);
+			}
+			diff_array<_Tp, _llim, _ulim>() {}
+			diff_array<_Tp, _llim, _ulim>(_Tp _val) {
+				for(int i = _llim; i <= _ulim; i++)
+					operator[](i) = _val;
+			}
+			template<typename _Op> diff_array<_Tp, _llim, _ulim>(_Op _fun) {
+				for(int i = _llim; i <= _ulim; i++)
+					operator[](i) = _fun(i);
+			}
+	};
+}
+#endif
+#endif

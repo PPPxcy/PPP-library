@@ -1,98 +1,102 @@
 #ifndef __PPP_PACKAGE__
 #define __PPP_PACKAGE__ 'u'
 #if __PPP_PACKAGE__ != 'l'
+#include <PPP/crazy_types>
 namespace PPP {
+/*
+Memory of the package:
+	|Name			|Mem per one		|Count		|All memory									|
+	|---------------|-------------------|-----------|-------------------------------------------|
+	|Your `_Tps`	|Sum of sizeof `_Tp`|1			|M											|
+	|---------------|-------------------|-----------|-------------------------------------------|
+	|By functions	|Uncountable		|Uncountable|`_Tp count` * Sum of sizeof `_Tp`	(Worst)	|
+*/
 	namespace PACKAGE {
 		template<typename ..._Tps> class package;
 		template<const unsigned _cnt> struct __AHA__ {};
-		template<const unsigned _cnt, typename ..._Tps> class types_cntter;
-		template<const unsigned _cnt, typename _Tpf, typename ..._Tps> class types_cntter<_cnt, _Tpf, _Tps...> {
-			public:
-				typedef typename types_cntter<_cnt - 1, _Tps...>::type type;
-		};
-		template<typename _Tpf, typename ..._Tps> class types_cntter<0, _Tpf, _Tps...> {
-			public:
-				typedef _Tpf type;
-		};
 		template<> class package<> {
 			public:
-				bool operator < (package<> a) {
+				bool operator < (const package<> &a) {
 					return false;
 				}
-				bool operator > (package<> a) {
+				bool operator > (const package<> &a) {
 					return false;
 				}
-				bool operator == (package<> a) {
+				bool operator == (const package<> &a) {
 					return true;
 				}
-				bool operator != (package<> a) {
+				bool operator != (const package<> &a) {
 					return false;
 				}
-				bool operator <= (package<> a) {
+				bool operator <= (const package<> &a) {
 					return true;
 				}
-				bool operator >= (package<> a) {
+				bool operator >= (const package<> &a) {
 					return true;
 				}
 				package<>() {}
-				package<>(package<> &a) {}
+				package<>(const package<> &a) {}
 		};
 		template<typename _Tpf, typename ..._Tps> class package<_Tpf, _Tps...> {
 			protected:
 				_Tpf _fir;
 				package<_Tps...> _els;
 			public:
-				bool operator < (package<_Tpf, _Tps...> a) {
+				bool operator < (const package<_Tpf, _Tps...> &a) {
 					if(_fir < a._fir)
 						return true;
 					if(_fir > a._fir)
 						return false;
 					return _els < a._els;
 				}
-				bool operator > (package<_Tpf, _Tps...> a) {
+				bool operator > (const package<_Tpf, _Tps...> &a) {
 					if(_fir > a._fir)
 						return true;
 					if(_fir < a._fir)
 						return false;
 					return _els > a._els;
 				}
-				bool operator == (package<_Tpf, _Tps...> a) {
+				bool operator == (const package<_Tpf, _Tps...> &a) {
 					if(_fir != a._fir)
 						return false;
 					return _els == a._els;
 				}
-				bool operator != (package<_Tpf, _Tps...> a) {
+				bool operator != (const package<_Tpf, _Tps...> &a) {
 					return !((*this) == a);
 				}
-				bool operator <= (package<_Tpf, _Tps...> a) {
+				bool operator <= (const package<_Tpf, _Tps...> &a) {
 					if(_fir < a._fir)
 						return true;
 					if(_fir > a._fir)
 						return false;
 					return _els <= a._els;
 				}
-				bool operator >= (package<_Tpf, _Tps...> a) {
+				bool operator >= (const package<_Tpf, _Tps...> &a) {
 					if(_fir > a._fir)
 						return true;
 					if(_fir < a._fir)
 						return false;
 					return _els >= a._els;
 				}
-				typename types_cntter<0, _Tpf, _Tps...>::type& __get(__AHA__<0>) {
+				typename cntter_type<0, _Tpf, _Tps...>::restype& __get(__AHA__<0>) {
 					return _fir;
 				}
-				template<const unsigned _cnt> typename types_cntter<_cnt, _Tpf, _Tps...>::type& __get(__AHA__<_cnt>) {
+				template<const unsigned _cnt> typename cntter_type<_cnt, _Tpf, _Tps...>::restype& __get(__AHA__<_cnt>) {
 					return _els.__get(__AHA__<_cnt - 1>());
 				}
-				template<const unsigned _cnt> typename PACKAGE::types_cntter<_cnt, _Tpf, _Tps...>::type& get() {
+				template<const unsigned _cnt> typename cntter_type<_cnt, _Tpf, _Tps...>::restype& get() {
 					return __get(__AHA__<_cnt>());
 				}
 				package<_Tpf, _Tps...>() : _fir(), _els() {}
 				package<_Tpf, _Tps...>(_Tpf ff, _Tps... ss) : _fir(ff), _els(ss...) {}
-				package<_Tpf, _Tps...>(package<_Tpf, _Tps...> &a) : _fir(a._fir), _els(a._els) {}
+				package<_Tpf, _Tps...>(const package<_Tpf, _Tps...> &a) : _fir(a._fir), _els(a._els) {}
 		};
+		template<typename ..._Tps> package<_Tps...> pack(_Tps... _vals) {
+			return package<_Tps...>(_vals...);
+		}
 	}
 	using PACKAGE::package;
+	using PACKAGE::pack;
 }
 #endif
 #endif
