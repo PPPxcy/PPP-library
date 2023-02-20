@@ -1,5 +1,5 @@
 #ifndef __PPP_HEAP__
-#define __PPP_HEAP__ 'l'
+#define __PPP_HEAP__ 't'
 #if __PPP_HEAP__ != 'l'
 #include <PPP/dynamic_array>
 namespace PPP {
@@ -12,8 +12,10 @@ namespace PPP {
 			_Container _con;
 			_Oper _op;
 			void swap(_Tp &a, _Tp &b) {
-				static _Tp _tmp;
-				_tmp = a, a = b, b = _tmp;
+				static unsigned char _tmp[sizeof(_Tp)];
+				memmove(tmp, &a, sizeof(_Tp));
+				memmove(&a, &b, sizeof(_Tp));
+				memmove(&b, tmp, sizeof(_Tp));
 			}
 		public:
 			template<typename _Iter> void rebuild(_Iter a, _Iter b) {
