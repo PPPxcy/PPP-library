@@ -1,0 +1,24 @@
+#ifndef __PPP_ERROR__
+#define __PPP_ERROR__ 't'
+#if __PPP_ERROR__ != 'l'
+#include <stdlib.h>
+#include <stdio.h>
+namespace PPP {
+	void error(unsigned _ErrorNo, const char *_ReturnStr) {
+	#ifndef __PPP_ERROR_SWITCH__
+		#define __PPP_ERROR_SWITCH__ true
+	#endif
+	#if __PPP_ERROR_SWITCH__ == true
+		fprintf(
+			stderr,
+			"There is an error with your code and your code returns %u!\n"
+			"The message is: \033[5m\033[38;2;%u;%u;%um\033[48;2;%u;%u;%um%s\033[0m\n",
+			_ErrorNo, 199, 37, 78, 248, 248, 248, _ReturnStr
+		);
+		exit(_ErrorNo);
+	#endif
+	}
+}
+#endif
+#endif
+

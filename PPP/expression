@@ -1,0 +1,63 @@
+#ifndef __PPP_EXPRESSION__
+#define __PPP_EXPRESSION__ 'u'
+#if __PPP_EXPRESSION__ != 'l'
+#include <PPP/maths_base>
+namespace PPP {
+	template<typename _Fun> decltype(((_Fun*)0) -> operator()(0)) sum(
+		auto _llim, auto _rlim, _Fun _exp, 
+		decltype(((_Fun*)0) -> operator()(0)) init = decltype(((_Fun*)0) -> operator()(0))()
+	) {	if(_llim == _rlim)
+			return init;
+		decltype(((_Fun*)0) -> operator()(0)) _res = _exp(_llim);
+		_llim++;
+		while(_llim < _rlim)
+			_res += _exp(_llim), _llim++;
+		return _res;
+	}
+	template<typename _Fun> decltype(((_Fun*)0) -> operator()(0)) prod(
+		auto _llim, auto _rlim, _Fun _exp, 
+		decltype(((_Fun*)0) -> operator()(0)) init = 1
+	) {	if(_llim == _rlim)
+			return init;
+		decltype(((_Fun*)0) -> operator()(0)) _res = _exp(_llim);
+		_llim++;
+		while(_llim < _rlim)
+			_res *= _exp(_llim), _llim++;
+		return _res;
+	}
+	template<typename _Fun> decltype(((_Fun*)0) -> operator()(0)) minimum(
+		auto _llim, auto _rlim, _Fun _exp, 
+		decltype(((_Fun*)0) -> operator()(0)) init = decltype(((_Fun*)0) -> operator()(0))()
+	) {	if(_llim == _rlim)
+			return init;
+		decltype(((_Fun*)0) -> operator()(0)) _res = _exp(_llim);
+		_llim++;
+		while(_llim < _rlim)
+			_res = PPP::min(_res, _exp(_llim)), _llim++;
+		return _res;
+	}
+	template<typename _Fun> decltype(((_Fun*)0) -> operator()(0)) maximum(
+		auto _llim, auto _rlim, _Fun _exp, 
+		decltype(((_Fun*)0) -> operator()(0)) init = decltype(((_Fun*)0) -> operator()(0))()
+	) {	if(_llim == _rlim)
+			return init;
+		decltype(((_Fun*)0) -> operator()(0)) _res = _exp(_llim);
+		_llim++;
+		while(_llim < _rlim)
+			_res = PPP::max(_res, _exp(_llim)), _llim++;
+		return _res;
+	}
+	template<typename _Fun, typename _Oper> decltype(((_Fun*)0) -> operator()(0)) convolution(
+		auto _llim, auto _rlim, _Fun _exp, _Oper _oper, 
+		decltype(((_Fun*)0) -> operator()(0)) init = decltype(((_Fun*)0) -> operator()(0))()
+	) {	if(_llim == _rlim)
+			return init;
+		decltype(((_Fun*)0) -> operator()(0)) _res = _exp(_llim);
+		_llim++;
+		while(_llim < _rlim)
+			_res = _oper(_res, _exp(_llim)), _llim++;
+		return _res;
+	}
+}
+#endif
+#endif

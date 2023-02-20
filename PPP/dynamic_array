@@ -1,11 +1,26 @@
 #ifndef __PPP_DYNAMIC_ARRAY__
-#define __PPP_DYNAMIC_ARRAY__ 't'
+#define __PPP_DYNAMIC_ARRAY__ 'u'
 #if __PPP_DYNAMIC_ARRAY__ != 'l'
+#include <PPP/error>
+#include <string.h>
+#include <PPP/sp>
 namespace PPP {
+	/*
+	Memory of the `dynamic_array`:
+		|Name			|Mem per one|Count							|All memory						|
+		|---------------|-----------|-------------------------------|-------------------------------|
+		|Iterator		|8B (64-bit)|3								|24B(64-bit)					|
+		|				|4B (32-bit)|								|12B(32-bit)					|
+		|---------------|-----------|-------------------------------|-------------------------------|
+		|Member in the	|Sizeof`_Tp`|1.618034 * `size()`	(Worst)	|M * C							|
+		|array			|			|`size()`				(Best)	|								|
+		|---------------|-----------|-------------------------------|-------------------------------|
+		|By functions	|Uncountable|Uncountable					|1.618034 * `size()`	(Worst)	|
+	*/
 	template<typename _Tp> class dynamic_array {
 		public:
-			typedef _Tp* iterator;
-			typedef const _Tp* const_iterator;
+			typedef _Tp *iterator;
+			typedef const _Tp *const_iterator;
 		protected:
 			iterator _beg, _end, _eos;
 		public:
@@ -23,9 +38,9 @@ namespace PPP {
 			}
 			void swap(dynamic_array<_Tp> &v) {
 				iterator _tmp = _beg;
-				_beg = v._beg, v._beg = _tmp, 
-				_tmp = _end, _end = v._end, v._end = _tmp, 
-				_tmp = _eos, _eos = v._eos, v._eos = _tmp; 
+				_beg = v._beg, v._beg = _tmp,
+				_tmp = _end, _end = v._end, v._end = _tmp,
+				_tmp = _eos, _eos = v._eos, v._eos = _tmp;
 			}
 		public:
 			bool empty() const {
@@ -37,152 +52,144 @@ namespace PPP {
 			unsigned capacity() const {
 				return _eos - _beg;
 			}
-			dynamic_array<_Tp>& operator = (dynamic_array<_Tp> _val) {
+			dynamic_array<_Tp> &operator = (const dynamic_array<_Tp> &_val) {
 				swap(_val);
 				return *this;
 			}
-			dynamic_array<_Tp> operator + (dynamic_array<_Tp> _val) const {
+			dynamic_array<_Tp> operator + (const dynamic_array<_Tp> &_val) const {
 				dynamic_array<_Tp> _tmp(*this);
 				_tmp += _val;
 				return _tmp;
 			}
-			dynamic_array<_Tp>& operator += (dynamic_array<_Tp> _val) {
+			dynamic_array<_Tp> &operator += (const dynamic_array<_Tp> &_val) {
 				push_back(_val);
 				return *this;
 			}
-			_Tp& operator [] (unsigned _k) {
+			_Tp &operator [](unsigned _k) {
 				return _beg[_k];
 			}
-			const _Tp operator [] (unsigned _k) const {
+			const _Tp operator [](unsigned _k) const {
 				return _beg[_k];
 			}
 		public:
-			void request(unsigned _k) {
-				iterator _tmpbeg = new _Tp[_k];
+			template<typename... _Tps> void request(unsigned _k, _Tps... _args) {
+				iterator _tmpbeg = new _Tp[_k](_args...);
 				if(_beg != nullptr) {
 					unsigned _siz = size();
 					if(_k < _siz)
 						_siz = _k;
-					for(unsigned i = 0; i < _siz; i++)
-						_tmpbeg[i] = _beg[i];
+					memmove(_tmpbeg, _beg, sizeof(_Tp) * _siz);
 					delete []_beg;
-					_beg = _tmpbeg, 
+					_beg = _tmpbeg,
 					_end = _beg + _siz,
 					_eos = _beg + _k;
 				} else
-					_beg = _tmpbeg, 
+					_beg = _tmpbeg,
 					_end = _beg,
 					_eos = _beg + _k;
 			}
 			void resize(unsigned _k, _Tp v = _Tp()) {
 				if(_k <= size()) {
-					//	1/Ï€ â‰ˆ 0.318359375 = 163/512
-					if(_k <= ((unsigned long long)(capacity()) * 163 >> 9))
-						request(((unsigned long long)(capacity()) * 163 >> 9));
+					//	¦Õ¡Ö0.618034
+					if(_k <= (unsigned long long)(capacity() * 0.618034))
+						request((unsigned long long)(capacity() * 0.618034));
 					//	Be smaller
 					_end = _beg + _k;
-				} else {
-					if(_k > capacity())
-						request(_k);
-					while(_end < _beg + _k)
+				} else if(_k > capacity())
+					request(_k, v);
+				else while(_end < _beg + _k)
 						push_back(v);
-				}
 			}
 			void push_back(_Tp _val) {
 				if(_end == _eos)
-				//	e â‰ˆ 2.71875 = 87/32
-					request(((unsigned long long)(capacity()) * 87 >> 5) + 1);
+					//	1/¦Õ¡Ö1.618034
+					request((unsigned long long)(capacity() * 1.618034) + 1);
 				//	Be bigger
 				*_end++ = _val;
 			}
 			void push_back(_Tp _val, unsigned _k) {
-				while(_k--)
-					push_back(_val);
+				while(capacity() < size() + _k)
+					request((unsigned long long)(capacity() * 1.618034) + 1);
+				fill(_end, _end + _k, _val);
+				_end += _k;
 			}
 			void push_back(dynamic_array<_Tp> _val) {
-				for(iterator _it = _val.begin(); _it != _val.end(); _it++)
-					push_back(*_it);
+				unsigned _k = _val.size();
+				while(capacity() < size() + _val.size())
+					request((unsigned long long)(capacity() * 1.618034) + 1);
+				memmove(_end, _val.begin(), sizeof(_Tp) * _val.size());
+				_end += _k;
 			}
 			template<typename... _Tps> void emplace_back(_Tps ..._vals) {
 				push_back(_Tp(_vals...));
 			}
 			void pop_back() {
-			#ifdef assert
-				assert(empty() == false);
-			#endif
+				if(empty())
+					error(998244353, "void dynamic_array::pop_back(): The values are not enough to pop! [ORE]");
 				_end--;
-				//	1/Ï€ â‰ˆ 0.318359375 = 163/512
-				if(size() <= ((unsigned long long)(capacity()) * 163 >> 9))
-					request(((unsigned long long)(capacity()) * 163 >> 9));
+				//	¦Õ¡Ö0.618034
+				if(size() <= (unsigned long long)(capacity() * 0.618034))
+					request((unsigned long long)(capacity() * 0.618034));
 				//	Be smaller
 			}
 			void pop_back(unsigned _k) {
-			#ifdef assert
-				assert(_beg + _k <= _end);
-			#endif
+				if(_beg + _k > _end)
+					error(998244353, "void dynamic_array::pop_back(unsigned): The values are not enough to pop! [ORE]");
 				_end -= _k;
-				//	1/Ï€ â‰ˆ 0.318359375 = 163/512
-				if(size() <= ((unsigned long long)(capacity()) * 163 >> 9))
-					request(((unsigned long long)(capacity()) * 163 >> 9));
+				//	¦Õ¡Ö0.618034
+				if(size() <= (unsigned long long)(capacity() * 0.618034))
+					request((unsigned long long)(capacity() * 0.618034));
 				//	Be smaller
 			}
 			void insert(unsigned _k, _Tp _val) {
-			#ifdef assert
-				assert(_k <= size());
-			#endif
-				push_back(_Tp());
-				iterator _it = _end - 2, _lim = _beg + _k;
-				while(_it >= _lim)
-					*(_it + 1) = *_it, _it--;
-				*_lim = _val;
+				if(_beg + _k > _end)
+					error(998244353, "void dynamic_array::insert(unsigned, _Tp): Out of range! [ORE]");
+				while(capacity() < size() + 1)
+					request((unsigned long long)(capacity() * 1.618034) + 1);
+				memmove(_beg + _k + 1, _beg + _k, sizeof(_Tp) * (size() - _k));
+				_beg[_k] = _val;
+				_end++;
 			}
 			void insert(unsigned _k, _Tp _val, unsigned _cnt) {
-			#ifdef assert
-				assert(_k <= size());
-			#endif
-				push_back(_Tp(), _cnt);
-				iterator _it = _end - _cnt - 1, _lim = _beg + _k;
-				while(_it >= _lim)
-					*(_it + _cnt) = *_it;
-				for(unsigned i = 0; i < _cnt; i++)
-					_lim[i] = _val;
+				if(_k > size())
+					error(998244353, "void dynamic_array::insert(unsigned, _Tp, unsigned): Out of range! [ORE]");
+				while(capacity() < size() + _cnt)
+					request((unsigned long long)(capacity() * 1.618034) + 1);
+				memmove(_beg + _k + _cnt, _beg + _k, sizeof(_Tp) * (size() - _k));
+				fill(_beg + _k, _beg + _k + _cnt, _val);
+				_end += _cnt;
 			}
 			void insert(unsigned _k, dynamic_array<_Tp> _val) {
-			#ifdef assert
-				assert(_k <= size());
-			#endif
+				if(_k > size())
+					error(998244353, "void dynamic_array::insert(unsigned, dynamic_array<_Tp>): Out of range! [ORE]");
 				unsigned _cnt = _val.size();
-				push_back(_Tp(), _cnt);
-				iterator _it = _end - _cnt - 1, _lim = _beg + _k;
-				while(_it >= _lim)
-					*(_it + _cnt) = *_it;
-				for(unsigned i = 0; i < _cnt; i++)
-					_lim[i] = _val[i];
+				while(capacity() < size() + _cnt)
+					request((unsigned long long)(capacity() * 1.618034) + 1);
+				memmove(_beg + _k + _cnt, _beg + _k, sizeof(_Tp) * (size() - _k));
+				_end += _cnt;
 			}
 			void erase(unsigned _k) {
-			#ifdef assert
-				assert(_k < size());
-			#endif
-				iterator _it = _beg + _k + 1;
-				while(_it < _end)
-					*(_it - 1) = *_it, ++_it;
-				pop_back();
+				if(_k >= size())
+					error(998244353, "void dynamic_array::erase(unsigned): Out of range! [ORE]");
+				memmove(_beg + _k, _beg + _k + 1, sizeof(_Tp) * (size() - _k - 1));
+				_end--;
+				if(size() <= (unsigned long long)(capacity() * 0.618034))
+					request((unsigned long long)(capacity() * 0.618034));
 			}
 			void erase(unsigned _k, unsigned _cnt) {
-			#ifdef assert
-				assert(_k < size());
-			#endif
-				iterator _it = _beg + _k + _cnt;
-				while(_it < _end)
-					*(_it - _cnt) = *_it, ++_it;
-				pop_back(_cnt);
+				if(_k >= size())
+					error(998244353, "void dynamic_array::erase(unsigned, unsigned): Out of range! [ORE]");
+				else if(_k + _cnt >= size())
+					error(998244353, "void dynamic_array::erase(unsigned, unsigned): The values are not enough to erase! [ORE]");
+				memmove(_beg + _k, _beg + _k + _cnt, sizeof(_Tp) * (size() - _k - _cnt));
+				_end -= _cnt;
+				if(size() <= (unsigned long long)(capacity() * 0.618034))
+					request((unsigned long long)(capacity() * 0.618034));
 			}
 		public:
 			dynamic_array<_Tp>() : _beg(nullptr), _end(nullptr), _eos(nullptr) {}
 			dynamic_array<_Tp>(unsigned _k, _Tp _val) : _beg(nullptr), _end(nullptr), _eos(nullptr) {
-				request(_k);
-				for(unsigned i = 0; i < _k; i++)
-					_beg[i] = _val;
+				request(_k, _val);
 			}
 			template<typename _TpIter> dynamic_array<_Tp>(_TpIter _left, _TpIter _right) : _beg(nullptr), _end(nullptr), _eos(nullptr) {
 				request(_right - _left);
@@ -190,7 +197,7 @@ namespace PPP {
 					push_back(*_left++);
 			}
 			dynamic_array<_Tp>(const dynamic_array<_Tp> &_val) : _beg(nullptr), _end(nullptr), _eos(nullptr) {
-				operator = (_val);
+				(*this) = dynamic_array<_Tp>(_val.begin(), _val.end());
 			}
 			dynamic_array<_Tp>(dynamic_array<_Tp> &&_val) : _beg(nullptr), _end(nullptr), _eos(nullptr) {
 				swap(_val);

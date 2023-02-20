@@ -1,0 +1,105 @@
+#ifndef __PPP_FRAC__
+#define __PPP_FRAC__ 't'
+#if __PPP_FRAC__ != 'l'
+#include <PPP/maths_base>
+#include <PPP/scan>
+namespace PPP {
+/*
+Memory of the `frac`:
+	|Name			|Mem per one		|Count	|All memory	|
+	|---------------|-------------------|-------|-----------|
+	|Numes and Denos|Sizeof `_int`		|2		|M * C		|
+	|---------------|-------------------|-------|-----------|
+	|By functions	|Sizeof `frac<_int>`|2		|M * C		|
+*/
+	template<typename _int> class frac {
+		private:
+			_int _nume, _deno;
+		public:
+			frac<_int>() : _nume(0), _deno(1) {}
+			frac<_int>(_int nume) : _nume(nume), _deno(1) {}
+			frac<_int>(_int nume, _int deno) : _nume(nume / gcd(abs(nume), abs(deno))), _deno(deno / gcd(abs(nume), abs(deno))) {
+				if(_nume * _deno > 0)
+					_nume = abs(_nume), _deno = abs(_deno);
+				else if(_nume * _deno < 0)
+					_nume = -abs(_nume), _deno = abs(_deno);
+				else
+					_nume = 0, _deno = 1;
+			} 
+			frac<_int> operator + (frac<_int> a) const {
+				return frac<_int>(_nume * a._deno + a._nume * _deno, _deno * a._deno);
+			}
+			frac<_int> operator - (frac<_int> a) const {
+				return frac<_int>(_nume * a._deno - a._nume * _deno, _deno * a._deno);
+			}
+			frac<_int> operator * (frac<_int> a) const {
+				return frac<_int>(_nume * a._nume, _deno * a._deno);
+			}
+			frac<_int> operator / (frac<_int> a) const {
+				return frac<_int>(_nume * a._deno, _deno * a._nume);
+			}
+			frac<_int> operator ^ (frac<_int> a) const {
+				return frac<_int>(_nume + a._nume, _deno + a._deno);
+			}
+			frac<_int> operator + () const {
+				return *this;
+			}
+			frac<_int> operator - () const {
+				return frac<_int>(_nume, _deno);
+			}
+			frac<_int> operator * () const {
+				return *this;
+			}
+			frac<_int> operator ! () const {
+				return frac<_int>(_nume, _deno);
+			}
+			bool operator < (frac<_int> a) const {
+				return _nume * a._deno < a._nume * _deno;
+			}
+			bool operator <= (frac<_int> a) const {
+				return _nume * a._deno <= a._nume * _deno;
+			}
+			bool operator > (frac<_int> a) const {
+				return _nume * a._deno > a._nume * _deno;
+			}
+			bool operator >= (frac<_int> a) const {
+				return _nume * a._deno >= a._nume * _deno;
+			}
+			bool operator == (frac<_int> a) const {
+				return _nume * a._deno == a._nume * _deno;
+			}
+			bool operator != (frac<_int> a) const {
+				return _nume * a._deno != a._nume * _deno;
+			}
+			frac<_int>& operator += (frac<_int> a) {
+				return (*this) = frac<_int>(_nume * a._deno + a._nume * _deno, _deno * a._deno);
+			}
+			frac<_int>& operator -= (frac<_int> a) {
+				return (*this) = frac<_int>(_nume * a._deno - a._nume * _deno, _deno * a._deno);
+			}
+			frac<_int>& operator *= (frac<_int> a) {
+				return (*this) = frac<_int>(_nume * a._nume, _deno * a._deno);
+			}
+			frac<_int>& operator /= (frac<_int> a) {
+				return (*this) = frac<_int>(_nume * a._deno, _deno * a._nume);
+			}
+			frac<_int>& operator ^= (frac<_int> a) const {
+				return (*this) = frac<_int>(_nume + a._nume, _deno + a._deno);
+			}
+			_int nume() {
+				return _nume;
+			}
+			_int deno() {
+				return _deno;
+			}
+	};
+	template<typename _Tp> int scanner::operator () (frac<_Tp> &a) {
+		_Tp x, y;
+		scan(x, y);
+		a = frac<_Tp>(x, y);
+		return 1;
+	}
+}
+#endif
+#endif
+

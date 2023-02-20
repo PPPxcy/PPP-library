@@ -1,0 +1,64 @@
+#ifndef __PPP_HEAP__
+#define __PPP_HEAP__ 'l'
+#if __PPP_HEAP__ != 'l'
+#include <PPP/dynamic_array>
+namespace PPP {
+	template<
+		typename _Tp, typename _Oper, 
+		typename _Container = dynamic_array<_Tp>,
+		const unsigned _Degree = 2
+	> class heap {
+		private:
+			_Container _con;
+			_Oper _op;
+			void swap(_Tp &a, _Tp &b) {
+				static _Tp _tmp;
+				_tmp = a, a = b, b = _tmp;
+			}
+		public:
+			template<typename _Iter> void rebuild(_Iter a, _Iter b) {
+				for(; a != b; a++)
+					push(*a);
+			}
+			unsigned size() const {
+				return _con.size();
+			}
+			void push(_Tp _val) {
+				_con.push_back(_val);
+				for(unsigned k = _con.size() - 1; k >= 0; (k -= 1) /= _Degree)
+					if(_op(_con[k], _con[(k - 1) / _Degree]))
+						swap(_con[k], _con[(k - 1) / _Degree]);
+					else
+						break;
+			}
+			template<typename... _Tps> void emplace(_Tps... _Args) {
+				_con.emplace_back(_Args...);
+				for(unsigned k = _con.size() - 1; k >= 0; (k -= 1) /= _Degree)
+					if(_op(_con[k], _con[(k - 1) / _Degree]))
+						swap(_con[k], _con[(k - 1) / _Degree]);
+					else
+						break;
+			}
+			void pop() {
+				for(unsigned k = 0; k < _con.size(); ) {
+					unsigned kk = k * _Degree, _Max = kk + 1;
+					for(unsigned l = 2; l <= _Degree; l++)
+						if(_op(_con[_Max], _con[kk + l]))
+							_Max = kk + l;
+					swap(_con[k], _con[_Max]), k = _Max;
+				}
+			}
+			_Tp top() const {
+				return _con[0];
+			}
+			bool empty() const {
+				return _con.empty();
+			}
+			heap<_Tp, _Oper, _Container, _Degree>() : _op(_Oper()) {}
+			template<typename _Iter> heap<_Tp, _Oper, _Container, _Degree>(_Iter a, _Iter b) : _op(_Oper()) {
+				rebuild(a, b);
+			}
+	};
+}
+#endif
+#endif

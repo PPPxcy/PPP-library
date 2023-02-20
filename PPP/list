@@ -1,0 +1,245 @@
+#ifndef __PPP_LIST__
+#define __PPP_LIST__ 'u'
+#if __PPP_LIST__ != 'l'
+#include <PPP/sp>
+namespace PPP {
+/*
+Memory of the `list`:
+	|Name			|Mem per one	|Count		|All memory			|
+	|---------------|---------------|-----------|-------------------|
+	|`_beg`			|8B	(64-bit)	|1			|8B	(64-bit)		|
+	|				|4B	(32-bit)	|			|4B	(32-bit)		|
+	|---------------|---------------|-----------|-------------------|
+	|`_siz`			|4B				|1			|4B					|
+	|---------------|---------------|-----------|-------------------|
+	|				|Sizeof`_Tp` +	|			|					|
+	|Member	in the	|16B(64-bit)	|`size()`	|M * C				|
+	|list			|8B	(32-bit)	|			|					|
+	|---------------|---------------|-----------|-------------------|
+	|By functions	|Uncountable	|Uncountable|`size()`	(Worst)	|
+*/
+	template<typename _Tp> class list {
+		private:
+			class __list_node_t {
+				public:
+					_Tp _val;
+					__list_node_t *_pv, *_nx;
+					__list_node_t() : _val(), _pv(nullptr), _nx(nullptr) {}
+					__list_node_t(_Tp __inp_val) : _val(__inp_val), _pv(nullptr), _nx(nullptr) {}
+			};
+			__list_node_t *_beg;
+			unsigned _siz;
+		public:
+			class iterator {
+				private:
+					__list_node_t *_ptr;
+				public:
+					__list_node_t* ______() {
+						return _ptr;
+					}
+					iterator() : _ptr(nullptr) {}
+					iterator(__list_node_t *_k) : _ptr(_k) {}
+					iterator(const iterator &_k) : _ptr(_k._ptr) {}
+					bool operator == (iterator a) const {
+						return _ptr == a._ptr;
+					}
+					bool operator != (iterator a) const {
+						return _ptr != a._ptr;
+					}
+					iterator operator + (unsigned _cnt) const {
+						iterator _tmp(*this);
+						while(_cnt--)
+							_tmp++;
+						return _tmp;
+					}
+					iterator operator - (unsigned _cnt) const {
+						iterator _tmp(*this);
+						while(_cnt--)
+							_tmp--;
+						return _tmp;
+					}
+					iterator& operator ++ () {
+						_ptr = _ptr -> _nx;
+						return *this;
+					}
+					iterator operator ++ (int) {
+						iterator _tmp(_ptr);
+						_ptr = _ptr -> _nx;
+						return _tmp;
+					}
+					iterator& operator -- () {
+						_ptr = _ptr -> _pv;
+						return *this;
+					}
+					iterator operator -- (int) {
+						iterator _tmp(_ptr);
+						_ptr = _ptr -> _pv;
+						return _tmp;
+					}
+					_Tp& operator * () const {
+						return _ptr -> _val;
+					}
+					_Tp* operator -> () const {
+						return &(_ptr -> _val);
+					}
+			};
+			bool empty() {
+				return _beg -> _pv == _beg;
+			}
+			unsigned size() {
+				return _siz;
+			}
+			_Tp& front() {
+				return *begin();
+			}
+			iterator begin() {
+				return _beg -> _nx;
+			}
+			const iterator begin() const {
+				return _beg -> _nx;
+			}
+			_Tp& back() {
+				return *iterator(_beg -> _pv);
+			}
+			iterator end() {
+				return _beg;
+			}
+			const iterator end() const {
+				return _beg;
+			}
+			void push_back(_Tp _val) {
+				insert(_beg, _val);
+			}
+			void push_back(list<_Tp> a) {
+				insert(_beg, a);
+			}
+			void push_back(_Tp _val, unsigned _cnt) {
+				insert(_beg, _val, _cnt);
+			}
+			template<typename _Iter> void push_back(_Iter _first, _Iter _last) {
+				insert(_beg, _first, _last);
+			}
+			void push_front(_Tp _val) {
+				insert(_beg -> _nx, _val);
+			}
+			void push_front(const list<_Tp> &a) {
+				insert(_beg -> _nx, a);
+			}
+			void push_front(_Tp _val, unsigned _cnt) {
+				insert(_beg -> _nx, _val, _cnt);
+			}
+			template<typename _Iter> void push_front(_Iter _first, _Iter _last) {
+				insert(_beg -> _nx, _first, _last);
+			}
+			iterator insert(iterator _k, _Tp _val) {
+				_siz++;
+				__list_node_t *_tmp = new __list_node_t(_val),
+							  *_nxt = _k.______(),
+							  *_prv = _nxt -> _pv;
+				_prv -> _nx = _tmp,
+				_tmp -> _pv = _prv,
+				_tmp -> _nx = _nxt,
+				_nxt -> _pv = _tmp;
+				return _tmp;
+			}
+			iterator insert(iterator _k, list<_Tp> a) {
+				_siz += a._siz;
+				__list_node_t *_tmpb = a._beg -> _nx,
+							  *_tmpe = a._beg -> _pv,
+							  *_nxt = _k.______(),
+							  *_prv = _nxt -> _pv;
+				_prv -> _nx = _tmpb,
+				_tmpb -> _pv = _prv,
+				_tmpe -> _nx = _nxt,
+				_nxt -> _pv = _tmpe,
+				a._beg -> _pv = a._beg -> _nx = a._beg,
+				a._siz = 0;
+				return _tmpb;
+			}
+			iterator insert(iterator _k, _Tp _val, unsigned _cnt) {
+				iterator _res;
+				while(_cnt--)
+					_res = insert(_k, _val);
+				return _res;
+			}
+			template<typename _Iter> iterator insert(iterator _k, _Iter _first, _Iter _last) {
+				iterator _tmp(_k);
+				while(_first != _last)
+					_tmp = insert(_tmp, *_first++);
+				return _k + 1;
+			}
+			void pop_front() {
+				erase(_beg -> _nx);
+			}
+			void pop_front(unsigned _cnt) {
+				while(_cnt--)
+					pop_front();
+			}
+			void pop_back() {
+				erase(_beg -> _pv);
+			}
+			void pop_back(unsigned _cnt) {
+				while(_cnt--)
+					pop_back();
+			}
+			iterator erase(iterator _k) {
+			#ifdef assert
+				assert(_k != _beg);
+			#endif
+				_siz--;
+				__list_node_t *_del = _k.______(),
+							  *_prv = _del -> _pv,
+							  *_nxt = _del -> _nx;
+				delete _del,
+				_prv -> _nx = _nxt,
+				_nxt -> _pv = _prv;
+				return _nxt;
+			}
+			iterator erase(iterator _k, unsigned _cnt) {
+				while(_cnt--)
+					_k = erase(_k);
+				return _k;
+			}
+			void swap(list<_Tp> &a) {
+				__list_node_t *_tmp = _beg;
+				_beg = a._beg, a._beg = _tmp;
+				unsigned _tmmp = _siz;
+				_siz = a._siz, a._siz = _tmmp;
+			}
+			void clear() {
+				while((_beg -> _nx) != _beg)
+					erase(_beg -> _nx);
+			}
+			list<_Tp>() : _siz(0), _beg(new __list_node_t) {
+				_beg -> _pv = _beg -> _nx = _beg; 
+			}
+			template<typename _Iter> list<_Tp>(_Iter _first, _Iter _last) : _siz(0), _beg(new __list_node_t) {
+				_beg -> _pv = _beg -> _nx = _beg; 
+				while(_first != _last)
+					push_back(*_first++);
+			}
+			list<_Tp>(const list<_Tp> &a) : _siz(0), _beg(new __list_node_t) {
+				_beg -> _pv = _beg -> _nx = _beg; 
+				list<_Tp> _tmp(a.begin(), a.end());
+				swap(_tmp);
+			}
+			~list<_Tp>() {
+				clear();
+				if(_beg != nullptr)
+					delete _beg,
+					_beg = nullptr;
+			}
+			list<_Tp>& operator = (list<_Tp> a) {
+				swap(a);
+				return *this;
+			}
+			_Tp& operator [] (unsigned _k) {
+			#ifdef assert
+				assert(_k < _siz);
+			#endif
+				return *(iterator(_beg -> _nx) + _k);
+			}
+	};
+}
+#endif
+#endif

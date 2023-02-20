@@ -1,0 +1,43 @@
+#ifndef __PPP_STACK__
+#define __PPP_STACK__ 'u'
+#if __PPP_STACK__ != 'l'
+#include <PPP/list>
+#include <PPP/sp>
+namespace PPP {
+	template<typename _Tp, typename _Container = list<_Tp> > class stack {
+		private:
+			_Container _con;
+		public:
+			void push(_Tp _val) {
+				_con.push_front(_val);
+			}
+			_Tp& top() {
+				return _con.front();
+			}
+			void pop() {
+				_con.pop_front();
+			}
+			bool empty() {
+				return _con.empty();
+			}
+			unsigned size() {
+				return _con.size();
+			}
+			stack<_Tp, _Container>() : _con() {}
+			stack<_Tp, _Container>(const stack<_Tp> &_val) : _con(_val._con) {}
+	};
+#if __PPP_SP__ != 'l'
+	template<typename _Tp> int print(stack<_Tp> a) {
+		while(!a.empty())
+			print(a.top()), a.pop();
+		return 1;
+	}
+	template<typename _Tp> int print(stack<_Tp> a, PPP::CMD cmd) {
+		while(!a.empty())
+			print(pack(a.top(), cmd)), a.pop();
+		return 1;
+	}
+#endif
+}
+#endif
+#endif

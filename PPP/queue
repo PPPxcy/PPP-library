@@ -1,0 +1,43 @@
+#ifndef __PPP_QUEUE__
+#define __PPP_QUEUE__ 'u'
+#if __PPP_QUEUE__ != 'l'
+#include <PPP/list>
+#include <PPP/sp>
+namespace PPP {
+	template<typename _Tp, typename _Container = list<_Tp> > class queue {
+		private:
+			_Container _con;
+		public:
+			void push(_Tp _val) {
+				_con.push_back(_val);
+			}
+			_Tp& front() {
+				return _con.front();
+			}
+			void pop() {
+				_con.pop_front();
+			}
+			bool empty() {
+				return _con.empty();
+			}
+			unsigned size() {
+				return _con.size();
+			}
+			queue<_Tp, _Container>() : _con() {}
+			queue<_Tp, _Container>(const queue<_Tp> &_val) : _con(_val._con) {}
+	};
+#if __PPP_SP__ != 'l'
+	template<typename _Tp> int print(queue<_Tp> a) {
+		while(!a.empty())
+			print(a.front()), a.pop();
+		return 1;
+	}
+	template<typename _Tp> int print(queue<_Tp> a, PPP::CMD cmd) {
+		while(!a.empty())
+			print(pack(a.front(), cmd)), a.pop();
+		return 1;
+	}
+#endif
+}
+#endif
+#endif
